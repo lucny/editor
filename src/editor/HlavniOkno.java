@@ -10,12 +10,13 @@ import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Utilities;
 
 /**
  * Jednoduchý editor v Javě
@@ -27,6 +28,8 @@ public class HlavniOkno extends javax.swing.JFrame {
     private File soubor;
     private final Soubor txtSoubor = new Soubor();
     private String kodovani = "UTF-8";
+    private String searchText = "";
+    private String replText = "";
 
     /**
      * Creates new form HlavniOkno
@@ -54,16 +57,38 @@ public class HlavniOkno extends javax.swing.JFrame {
     private int pocetRadku(String s) {
         int i = 1;
         int pozice = 0;
-        while (s.indexOf("\n",pozice) > -1) {
-            pozice = s.indexOf("\n",pozice)+1;
+        while (s.indexOf("\n", pozice) > -1) {
+            pozice = s.indexOf("\n", pozice) + 1;
             i++;
         }
         return i;
     }
-    
+
     private void statusBarInfo() {
         infoRight.setText("Počet znaků: " + String.valueOf(editor.getText().length()));
         infoCenter.setText("Počet řádků: " + String.valueOf(this.pocetRadku(editor.getText())));
+    }
+
+    private void searchOperation(String foundTxt, String replacedTxt, Boolean replace) {
+        editor.requestFocusInWindow();
+        int startFrom = (editor.getCaretPosition() == editor.getDocument().getLength()) ? 0 : editor.getCaretPosition();
+        int max = editor.getDocument().getLength() - startFrom;
+        int searchIndex = -1;
+        try {
+            searchIndex = editor.getDocument().getText(startFrom, max).indexOf(foundTxt);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(HlavniOkno.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (searchIndex != -1) {
+            editor.select(searchIndex + startFrom, searchIndex + startFrom + foundTxt.length());
+            if (replace) {
+                editor.replaceSelection(replacedTxt);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Řetězec nebyl nalezen");
+            editor.setSelectionStart(-1);
+            editor.setSelectionEnd(-1);
+        }
     }
 
     /**
@@ -317,11 +342,21 @@ public class HlavniOkno extends javax.swing.JFrame {
         itemFind.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         itemFind.setMnemonic('h');
         itemFind.setText("Hledat...");
+        itemFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemFindActionPerformed(evt);
+            }
+        });
         menuEdit.add(itemFind);
 
         itemRaplace.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
         itemRaplace.setMnemonic('n');
         itemRaplace.setText("Nahradit...");
+        itemRaplace.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemRaplaceActionPerformed(evt);
+            }
+        });
         menuEdit.add(itemRaplace);
         menuEdit.add(jSeparator4);
 
@@ -536,12 +571,22 @@ public class HlavniOkno extends javax.swing.JFrame {
         editor.setBackground(barva);
     }//GEN-LAST:event_itemColorActionPerformed
 
+    /**
+     * Ohlasová metoda na událost spojenou s kliknutím na položku menu Nastavení
+     * | Písmo...
+     *
+     * @param evt
+     */
     private void itemFontActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemFontActionPerformed
+        /* Pomocí konstruktoru je vytvořen objekt dialogového okna FontDialog */
         FontDialog fontDialog = new FontDialog(this, true, editor.getFont(), editor.getForeground());
-        /* zobrazení dialogového okna */
-        fontDialog.setVisible(true);
-        editor.setFont(fontDialog.getPismo());
-        editor.setForeground(fontDialog.getBarva());
+        /* Zobrazení dialogového okna metodou showDialog() */
+        if (fontDialog.showDialog().equalsIgnoreCase("OK")) {
+            /* V případě, že bylo uzavřeno tlačítkem OK, dojde k nastavení editoru podle 
+             písma a barvy, kterou uživatel předvolil v dialogovém okně */
+            editor.setFont(fontDialog.getPismo());
+            editor.setForeground(fontDialog.getBarva());
+        }
     }//GEN-LAST:event_itemFontActionPerformed
 
     private void itemUTF8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemUTF8ActionPerformed
@@ -574,6 +619,23 @@ public class HlavniOkno extends javax.swing.JFrame {
     private void editorKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_editorKeyReleased
         this.statusBarInfo();
     }//GEN-LAST:event_editorKeyReleased
+
+    private void itemFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemFindActionPerformed
+        //searchWord = JOptionPane.showInputDialog ("Zadej hledaný řetězec",searchWord);
+        searchText = JOptionPane.showInputDialog(this, "Zadej hledaný řetězec", "Hledej", JOptionPane.PLAIN_MESSAGE, null, null, searchText).toString();
+        this.searchOperation(searchText, null, false);
+    }//GEN-LAST:event_itemFindActionPerformed
+
+    private void itemRaplaceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemRaplaceActionPerformed
+        NahraditDialog nahraditDialog = new NahraditDialog(this, true, searchText, replText);
+        /* zobrazení dialogového okna */
+        if (nahraditDialog.showDialog().equals("Nahradit")) {
+            editor.requestFocusInWindow();
+            searchText = nahraditDialog.getReplacedText();
+            replText = nahraditDialog.getNewText();
+            this.searchOperation(searchText, replText, true);
+        }
+    }//GEN-LAST:event_itemRaplaceActionPerformed
 
     /**
      * @param args the command line arguments

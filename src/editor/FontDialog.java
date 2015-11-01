@@ -19,57 +19,93 @@ public class FontDialog extends javax.swing.JDialog {
 
     private Font pismo;
     private Color barva;
+    private String actionButton = "Storno";
 
-    // private SimpleAttributeSet attributes;
     /**
-     * Creates new form JFontDialog
+     * Konstruktor - vytváří nový formulář JFontDialog
      *
-     * @param parent
-     * @param modal
-     * @param font
-     * @param color
+     * @param parent Formulář vlastníka (v tomto případě HlavniOkno)
+     * @param modal  Modální / nemodální dialogové okno
+     * @param font   Nastavené písmo - převzato výchozí nastavení písma v editoru
+     * @param color  Nastavená barva - převzato nastavení barvy v editoru
      */
     public FontDialog(java.awt.Frame parent, boolean modal, Font font, Color color) {
+        /* Využití dědičnosti - vyvolán konstruktor předka - tj. třídy JDialog */
         super(parent, modal);
-        pismo = font;
-        barva = color;
+        /* Uložení výchozího fontu do atributu pismo */
+        this.pismo = font;
+        /* Uložení výchozí barvy do atributu barva */
+        this.barva = color;
+        /* Inicializace komponent formuláře */        
         initComponents();
+        /* Pokus o načtení dostupných fontů systému */
         try {
+            /* Seznam fontů bude načten do proměnné fontList, která je polem řetězců */
             String[] fontList = GraphicsEnvironment.getLocalGraphicsEnvironment()
                     .getAvailableFontFamilyNames();
+            /* Se všemi prvky pole fontList bude postupně provedena operace v cyklu:
+               do prvku typPisma bude přidána nová položka obsahující jeden řetězec s názvem písma */
             for (String s : fontList) {
                 typPisma.addItem(s);
             }
-
+            /* Zjišťuje se rodina výchozího písma nastaveného v editoru */
             String fontFamily = font.getFamily();
+            /* Procházejí se všechna písma v seznamu typPisma */
             for (int i = 0; i < typPisma.getItemCount(); i++) {
+                /* Pokud je název písma v seznamu právě roven názvu výchozího písma  */
                 if (fontFamily.equalsIgnoreCase(typPisma.getItemAt(i).toString())) {
+                    /* je v komponentě typPisma nastavena aktivní položka odpovídající aktuálními indexu */
                     typPisma.setSelectedIndex(i);
+                    /* provádění cyklu může být přerušeno */
                     break;
                 }
             }
         } catch (Exception e) {
+            /* V případě výjimky při načítání fontů se objeví chybová hláška */
             JOptionPane.showMessageDialog(this.getParent(), "Nastala chyba při načítání fontů!", "Chyba!", JOptionPane.ERROR_MESSAGE);
         }
+        /* Je vyvolána metoda pro zobrazení ukázky písma */
         this.setUkazka();
     }
 
+    /** 
+     * Veřejná metoda, která zajistí zobrazení dialogového okna 
+     * @return vrací hodnotu v podobě řetězce - název stisknutého tlačítka během uzavírání dialogu
+     */
+    public String showDialog() {
+        /* Zviditelní dialogové okno */
+        this.setVisible(true);
+        /* Vrací název stisnutého tlačítka */
+        return actionButton; 
+    }
+
+    /** 
+     * Veřejná metoda zpřístupňující aktuální nastavení písma v dialogu 
+     * @return vrací hodnotu třídy Font 
+     */
     public Font getPismo() {
         return pismo;
     }
 
+    /** 
+     * Veřejná metoda zpřístupňující aktuální nastavení barvy v dialogu 
+     * @return vrací hodnotu třídy Color 
+     */
     public Color getBarva() {
         return barva;
     }
 
+    /**
+     * Soukromá metoda nastavující ukázku písma 
+     */
     private void setUkazka() {
-        // Nastavení aktuální velikosti písma
+        /* Nastavení aktuální velikosti písma */
         velikostPisma.setValue(pismo.getSize());
-        // Nastavení panelu pro zobrazení barvy písma
+        /* Nastavení panelu pro zobrazení barvy písma */
         barvaPisma.setOpaque(true);
         barvaPisma.setForeground(barva);
         barvaPisma.setBackground(barva);
-        // Nastavení stylu písma - přepínače obyčejné, kurzíva a tučné
+        /* Nastavení stylu písma - přepínače obyčejné, kurzíva a tučné */
         if ((pismo.getStyle() & Font.BOLD) == Font.BOLD) {
             tucne.setSelected(true);
         } else if ((pismo.getStyle() & Font.ITALIC) == Font.ITALIC) {
@@ -77,11 +113,11 @@ public class FontDialog extends javax.swing.JDialog {
         } else {
             obycejne.setSelected(true);
         }
-        // Nastavení vzhledu písma a jeho barvy v ukázce
+        /* Nastavení vzhledu písma a jeho barvy v ukázce */
         ukazka.setFont(pismo);
         ukazka.setForeground(barva);
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -111,6 +147,12 @@ public class FontDialog extends javax.swing.JDialog {
         setLocationByPlatform(true);
         setModal(true);
         setName("fontDialog"); // NOI18N
+        setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         rezPismaButtonGroup.add(obycejne);
         obycejne.setText("obyčejné");
@@ -251,44 +293,87 @@ public class FontDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    /**
+     * Ohlasová metoda na událost stisk tlačítka OK
+     * @param evt 
+     */
     private void OKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKButtonActionPerformed
-        this.setVisible(false);
+       actionButton = "OK";
+       /* Zneviditelní objekt formuláře a povolí jeho uvolnění z paměti */
+       this.setVisible(false);
+       this.dispose();
     }//GEN-LAST:event_OKButtonActionPerformed
 
+    /**
+     * Ohlasová metoda na událost stisk tlačítka Storno
+     * @param evt 
+     */
     private void stornoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stornoButtonActionPerformed
+        actionButton = "Storno";
         this.setVisible(false);
+        this.dispose();
     }//GEN-LAST:event_stornoButtonActionPerformed
 
+    /**
+     * Ohlasová metoda na událost změna stavu komponenty velikostPisma
+     * @param evt 
+     */
     private void velikostPismaStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_velikostPismaStateChanged
+        /* Provede se aktuální nastavení atributu pismo podle změněné hodnoty velikostPisma */
         pismo = new Font(pismo.getFamily(), pismo.getStyle(), (int) velikostPisma.getValue());
         this.setUkazka();
     }//GEN-LAST:event_velikostPismaStateChanged
 
+    /**
+     * Ohlasová metoda na událost akce v komponentě typPisma
+     * @param evt 
+     */
     private void typPismaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typPismaActionPerformed
         pismo = new Font((String) typPisma.getSelectedItem(), pismo.getStyle(), pismo.getSize());
         this.setUkazka();
     }//GEN-LAST:event_typPismaActionPerformed
 
+    /**
+     * Ohlasová metoda na událost akce s komponentou obycejne (typ radio)
+     * @param evt 
+     */
     private void obycejneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_obycejneActionPerformed
         pismo = pismo.deriveFont(Font.PLAIN);
         this.setUkazka();
     }//GEN-LAST:event_obycejneActionPerformed
 
+    /**
+     * Ohlasová metoda na událost akce s komponentou kurziva (typ radio)
+     * @param evt 
+     */
     private void kurzivaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kurzivaActionPerformed
         pismo = pismo.deriveFont(Font.ITALIC);
         this.setUkazka();
     }//GEN-LAST:event_kurzivaActionPerformed
 
+    /**
+     * Ohlasová metoda na událost akce s komponentou tucne (typ radio)
+     * @param evt 
+     */
     private void tucneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tucneActionPerformed
         pismo = pismo.deriveFont(Font.BOLD);
         this.setUkazka();
     }//GEN-LAST:event_tucneActionPerformed
 
+    /**
+     * Ohlasová metoda na událost kliknutí myši na komponentu barvaPisma
+     * @param evt 
+     */
     private void barvaPismaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_barvaPismaMouseClicked
+        /* Aktivuje se dialogové okno pro výběr barvy a podle uživatelova výběru se nastaví
+           aktuální barva */
         barva = JColorChooser.showDialog(this, "Vyber barvu textu", barva);
         this.setUkazka();
     }//GEN-LAST:event_barvaPismaMouseClicked
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments

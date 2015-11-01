@@ -56,7 +56,7 @@ public class Soubor {
             do {
                 znak = reader.read();
                 /* Do proměnné obsah jsou postupně ukládány jednotlivé znaky */
-                data += (char) znak;
+                if (znak != -1) data += (char) znak;
             } while (znak != -1);
         } catch (IOException e) {
             /* Ošetření případné výjimky - např. když soubor nemůže být otevřen */

@@ -141,6 +141,9 @@
                 <Property name="mnemonic" type="int" value="104"/>
                 <Property name="text" type="java.lang.String" value="Hledat..."/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemFindActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="itemRaplace">
               <Properties>
@@ -150,6 +153,9 @@
                 <Property name="mnemonic" type="int" value="110"/>
                 <Property name="text" type="java.lang.String" value="Nahradit..."/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemRaplaceActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator4">
             </MenuItem>
